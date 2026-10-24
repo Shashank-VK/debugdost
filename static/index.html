@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DebugDost — paste a traceback, understand it, fix it</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+  h1 { font-size: 1.8rem; margin-bottom: .25rem; }
+  .sub { color: #555; margin-top: 0; }
+  textarea { width: 100%; min-height: 180px; font-family: ui-monospace, monospace; font-size: .9rem; padding: .75rem; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+  .row { display: flex; gap: .75rem; align-items: center; margin: .75rem 0 1.25rem; }
+  select, button { font-size: 1rem; padding: .55rem .9rem; border-radius: 8px; }
+  button { background: #e8590c; color: #fff; border: 0; cursor: pointer; font-weight: 600; }
+  button:disabled { opacity: .5; }
+  .card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .card h2 { font-size: 1.05rem; margin: .1rem 0 .5rem; }
+  .err { color: #c92a2a; }
+  footer { color: #888; font-size: .85rem; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<h1>🐛 DebugDost</h1>
+<p class="sub">Paste a Python traceback. Get the root cause, a plain-language explanation, and the fix — in English, Hindi, or Kannada.</p>
+
+<textarea id="tb" placeholder="Traceback (most recent call last):&#10;  File &quot;app.py&quot;, line 12, in &lt;module&gt;&#10;    print(user[&quot;name&quot;])&#10;KeyError: 'name'"></textarea>
+<div class="row">
+  <label>Explain in
+    <select id="lang">
+      <option value="en">English</option>
+      <option value="hi">हिन्दी (Hindi)</option>
+      <option value="kn">ಕನ್ನಡ (Kannada)</option>
+    </select>
+  </label>
+  <button id="go">Explain my error</button>
+</div>
+
+<div id="out"></div>
+
+<footer>Built on BharatCode's model API (Qwen) for the BharatCode Build League.</footer>
+
+<script>
+const out = document.getElementById('out');
+document.getElementById('go').addEventListener('click', async () => {
+  const tb = document.getElementById('tb').value.trim();
+  const lang = document.getElementById('lang').value;
+  if (tb.length < 3) { out.innerHTML = '<p class="err">Paste a traceback first.</p>'; return; }
+  const btn = document.getElementById('go');
+  btn.disabled = true; btn.textContent = 'Thinking…';
+  out.innerHTML = '';
+  try {
+    const r = await fetch('/api/explain', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ traceback: tb, language: lang }) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Something went wrong');
+    const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    out.innerHTML =
+      '<div class="card"><h2>Root cause</h2><p>' + esc(d.root_cause) + '</p></div>' +
+      '<div class="card"><h2>What it means</h2><p>' + esc(d.explanation) + '</p></div>' +
+      '<div class="card"><h2>How to fix it</h2><ol>' + d.fix_steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol></div>';
+  } catch (e) {
+    out.innerHTML = '<p class="err">' + e.message + '</p>';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Explain my error';
+  }
+});
+</script>
+</body>
+</html>

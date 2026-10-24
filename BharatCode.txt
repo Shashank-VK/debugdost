@@ -1,0 +1,25 @@
+DebugDost — BharatCode Build League entry
+
+Project: DebugDost
+What it does: Paste a Python traceback and get the root cause, a plain-language
+explanation, and concrete fix steps, in English, Hindi, or Kannada.
+Category: Coding & developer tools
+Built by: Shashankareddy Karamudi (CMR University, B.Tech CSE, Class of 2027)
+
+Stack: Python, FastAPI, HTML/CSS/JS frontend, OpenAI Python SDK.
+Model: Qwen 3.8 (qwen-3.8-27b) via the BharatCode model API
+(https://bharatcode.ai/api/model/v1) — student tier.
+API: POST /api/explain {"traceback", "language"} ->
+{"root_cause", "explanation", "fix_steps"}.
+Tests: pytest, 5 tests with a mocked model client (no key needed).
+
+Live demo: https://huggingface.co/spaces/shashankvkaramudi/debugdost
+Repo: https://github.com/Shashank-VK/debugdost
+
+Run locally:
+  pip install -r requirements.txt
+  BHARATCODE_API_KEY=your_key_here uvicorn app:app --port 8000
+
+Notes: The API key is supplied via environment variable and is never committed
+to this repo. The app explains only the pasted error and says when a traceback
+is insufficient instead of guessing.
