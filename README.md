@@ -37,3 +37,13 @@ python -m pytest tests/ -q
 - No generic code generation: it explains only the pasted error.
 - When the traceback is not enough to tell, it says so instead of guessing.
 - No diagnosis beyond the pasted error, no invented library behaviour.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Trace[Python traceback] --> API[FastAPI + one-page UI]
+    API --> Model[Model API]
+    Model --> Out[Root cause + plain explanation<br/>English / Hindi / Kannada + fix steps]
+```
+
